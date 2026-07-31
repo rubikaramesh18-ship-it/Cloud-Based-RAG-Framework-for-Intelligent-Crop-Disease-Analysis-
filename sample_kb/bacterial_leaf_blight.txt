@@ -1,0 +1,22 @@
+Bacterial Leaf Blight in Rice
+
+Bacterial leaf blight, caused by Xanthomonas oryzae, is one of the most destructive bacterial
+diseases of rice, particularly in irrigated and rainfed lowland areas. Symptoms typically
+begin as water-soaked, pale yellow to white streaks near the leaf tip or margins, which
+enlarge and turn yellow to greyish-white as the disease develops. In severe cases, entire
+leaves wither and turn a pale straw color, a stage known as "kresek" when it occurs in
+seedlings, often leading to plant death. A milky, sticky bacterial exudate (ooze) may be
+visible on the underside of severely infected leaves in early morning.
+
+Conditions favoring outbreak: warm temperatures (25-34 degrees Celsius), high humidity,
+strong wind and rain (which spreads bacteria and creates wounds for entry), and excessive
+nitrogen fertilization.
+
+Recommended management:
+1. Use certified, disease-free seed and resistant rice varieties where available.
+2. Avoid excessive nitrogen application; apply fertilizer in split doses.
+3. Maintain proper field drainage and avoid deep standing water for long periods.
+4. Avoid working in fields when leaves are wet to reduce mechanical spread of bacteria.
+5. Remove and destroy infected stubble and volunteer rice plants after harvest.
+6. Apply copper-based bactericides only as advised, since chemical control alone is often
+   insufficient without resistant varieties and good field sanitation.

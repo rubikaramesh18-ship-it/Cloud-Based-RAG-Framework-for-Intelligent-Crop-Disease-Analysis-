@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>CropDiagnosis RAG</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<style>
+  :root {
+    --bg: #f4f7f5;
+    --card: #ffffff;
+    --text: #1c2b1f;
+    --muted: #5c6b60;
+    --accent: #2e7d32;
+    --accent-dark: #1b5e20;
+    --border: #dde5df;
+    --danger: #b3261e;
+  }
+  [data-theme="dark"] {
+    --bg: #14181a;
+    --card: #1e2427;
+    --text: #e7ece8;
+    --muted: #9aa89f;
+    --accent: #66bb6a;
+    --accent-dark: #388e3c;
+    --border: #2d3438;
+    --danger: #ef5350;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    transition: background 0.2s, color 0.2s;
+  }
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 28px;
+    border-bottom: 1px solid var(--border);
+  }
+  header h1 { font-size: 20px; margin: 0; }
+  header .sub { color: var(--muted); font-size: 13px; margin-top: 2px; }
+  .theme-btn {
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+    padding: 8px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 13px;
+  }
+  main {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 28px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 22px;
+  }
+  @media (max-width: 800px) { main { grid-template-columns: 1fr; } }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+  }
+  .card h2 { font-size: 15px; margin: 0 0 4px; }
+  .card p.desc { color: var(--muted); font-size: 12.5px; margin: 0 0 14px; }
+  .dropzone {
+    border: 1.5px dashed var(--border);
+    border-radius: 10px;
+    padding: 22px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .dropzone:hover { border-color: var(--accent); color: var(--accent); }
+  input[type="file"] { display: none; }
+  button.primary {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    margin-top: 12px;
+  }
+  button.primary:hover { background: var(--accent-dark); }
+  button.primary:disabled { opacity: 0.5; cursor: not-allowed; }
+  .status {
+    font-size: 12.5px;
+    color: var(--muted);
+    margin-top: 10px;
+  }
+  .status.ok { color: var(--accent); }
+  .status.err { color: var(--danger); }
+  #imgPreview {
+    max-width: 100%;
+    border-radius: 10px;
+    margin-top: 12px;
+    display: none;
+  }
+  .full-width { grid-column: 1 / -1; }
+  .result-block {
+    margin-top: 12px;
+    padding: 14px;
+    border-radius: 10px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    font-size: 14px;
+    line-height: 1.55;
+    white-space: pre-wrap;
+    position: relative;
+  }
+  .result-block h3 {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    margin: 0 0 8px;
+  }
+  .copy-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 6px;
+    font-size: 11px;
+    padding: 3px 8px;
+    cursor: pointer;
+  }
+  .copy-btn:hover { color: var(--accent); border-color: var(--accent); }
+  .source-item {
+    border-top: 1px solid var(--border);
+    padding: 10px 0;
+    font-size: 12.5px;
+  }
+  .source-item .meta { color: var(--muted); margin-bottom: 4px; }
+  .spinner {
+    display: none;
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 10px;
+  }
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    background: var(--border);
+    color: var(--muted);
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-left: 6px;
+  }
+</style>
+</head>
+<body data-theme="light">
+
+<header>
+  <div>
+    <h1>🌾 CropDiagnosis RAG</h1>
+    <div class="sub">Drone imagery + agricultural knowledge base -&gt; grounded diagnosis</div>
+  </div>
+  <button class="theme-btn" id="themeToggle">🌙 Dark mode</button>
+</header>
+
+<main>
+
+  <!-- Knowledge base upload -->
+  <div class="card">
+    <h2>Knowledge Base <span class="badge" id="kbBadge">-- chunks</span></h2>
+    <p class="desc">Upload agricultural research papers / extension guides (.pdf or .txt) to expand the retrieval knowledge base. A small sample set is already indexed on startup.</p>
+    <div class="dropzone" id="kbDropzone">
+      Click to choose .pdf / .txt files
+      <input type="file" id="kbFiles" multiple accept=".pdf,.txt" />
+    </div>
+    <button class="primary" id="kbUploadBtn">Upload to knowledge base</button>
+    <div class="spinner" id="kbSpinner">Indexing documents…</div>
+    <div class="status" id="kbStatus"></div>
+  </div>
+
+  <!-- Image diagnosis -->
+  <div class="card">
+    <h2>Diagnose a Crop Image</h2>
+    <p class="desc">Upload a drone or close-up photo of a leaf/crop showing symptoms. The system will describe the symptoms, retrieve relevant knowledge, and generate a grounded diagnosis.</p>
+    <div class="dropzone" id="imgDropzone">
+      Click to choose a photo
+      <input type="file" id="imgFile" accept="image/*" />
+    </div>
+    <img id="imgPreview" />
+    <button class="primary" id="diagnoseBtn" disabled>Diagnose</button>
+    <div class="spinner" id="diagSpinner">Analyzing image and retrieving context…</div>
+  </div>
+
+  <!-- Results -->
+  <div class="card full-width" id="resultsCard" style="display:none;">
+    <h2>Diagnosis Result</h2>
+
+    <div class="result-block" id="symptomsBlock">
+      <h3>Observed Symptoms</h3>
+      <button class="copy-btn" data-target="symptomsText">Copy</button>
+      <div id="symptomsText"></div>
+    </div>
+
+    <div class="result-block" id="diagnosisBlock">
+      <h3>Grounded Diagnosis</h3>
+      <button class="copy-btn" data-target="diagnosisText">Copy</button>
+      <div id="diagnosisText"></div>
+    </div>
+
+    <div class="result-block" id="sourcesBlock">
+      <h3>Retrieved Sources</h3>
+      <div id="sourcesList"></div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+const API_BASE = "";
+
+// --- Theme toggle ---
+const themeToggle = document.getElementById("themeToggle");
+themeToggle.addEventListener("click", () => {
+  const body = document.body;
+  const isDark = body.getAttribute("data-theme") === "dark";
+  body.setAttribute("data-theme", isDark ? "light" : "dark");
+  themeToggle.textContent = isDark ? "🌙 Dark mode" : "☀️ Light mode";
+});
+
+// --- Knowledge base upload ---
+const kbDropzone = document.getElementById("kbDropzone");
+const kbFilesInput = document.getElementById("kbFiles");
+const kbUploadBtn = document.getElementById("kbUploadBtn");
+const kbStatus = document.getElementById("kbStatus");
+const kbSpinner = document.getElementById("kbSpinner");
+const kbBadge = document.getElementById("kbBadge");
+
+kbDropzone.addEventListener("click", () => kbFilesInput.click());
+kbFilesInput.addEventListener("change", () => {
+  kbDropzone.textContent = `${kbFilesInput.files.length} file(s) selected`;
+});
+
+async function refreshKbStatus() {
+  try {
+    const res = await fetch(`${API_BASE}/api/knowledge-base/status`);
+    const data = await res.json();
+    kbBadge.textContent = `${data.total_chunks} chunks / ${data.total_documents} docs`;
+  } catch (e) {
+    kbBadge.textContent = "status unavailable";
+  }
+}
+refreshKbStatus();
+
+kbUploadBtn.addEventListener("click", async () => {
+  if (!kbFilesInput.files.length) {
+    kbStatus.textContent = "Choose at least one file first.";
+    kbStatus.className = "status err";
+    return;
+  }
+  const formData = new FormData();
+  for (const f of kbFilesInput.files) formData.append("files", f);
+
+  kbSpinner.style.display = "block";
+  kbUploadBtn.disabled = true;
+  kbStatus.textContent = "";
+
+  try {
+    const res = await fetch(`${API_BASE}/api/knowledge-base/upload`, { method: "POST", body: formData });
+    if (!res.ok) throw new Error(await res.text());
+    const data = await res.json();
+    kbStatus.textContent = `Added ${data.total_chunks_added} chunks.`;
+    kbStatus.className = "status ok";
+    await refreshKbStatus();
+  } catch (e) {
+    kbStatus.textContent = "Upload failed: " + e.message;
+    kbStatus.className = "status err";
+  } finally {
+    kbSpinner.style.display = "none";
+    kbUploadBtn.disabled = false;
+  }
+});
+
+// --- Image diagnosis ---
+const imgDropzone = document.getElementById("imgDropzone");
+const imgFileInput = document.getElementById("imgFile");
+const imgPreview = document.getElementById("imgPreview");
+const diagnoseBtn = document.getElementById("diagnoseBtn");
+const diagSpinner = document.getElementById("diagSpinner");
+const resultsCard = document.getElementById("resultsCard");
+const symptomsText = document.getElementById("symptomsText");
+const diagnosisText = document.getElementById("diagnosisText");
+const sourcesList = document.getElementById("sourcesList");
+
+imgDropzone.addEventListener("click", () => imgFileInput.click());
+imgFileInput.addEventListener("change", () => {
+  const file = imgFileInput.files[0];
+  if (!file) return;
+  imgPreview.src = URL.createObjectURL(file);
+  imgPreview.style.display = "block";
+  diagnoseBtn.disabled = false;
+});
+
+diagnoseBtn.addEventListener("click", async () => {
+  const file = imgFileInput.files[0];
+  if (!file) return;
+
+  const formData = new FormData();
+  formData.append("image", file);
+
+  diagSpinner.style.display = "block";
+  diagnoseBtn.disabled = true;
+  resultsCard.style.display = "none";
+
+  try {
+    const res = await fetch(`${API_BASE}/api/diagnose`, { method: "POST", body: formData });
+    if (!res.ok) throw new Error(await res.text());
+    const data = await res.json();
+
+    symptomsText.textContent = data.symptom_description;
+    diagnosisText.textContent = data.diagnosis;
+
+    sourcesList.innerHTML = "";
+    if (!data.sources.length) {
+      sourcesList.innerHTML = '<div class="source-item">No knowledge base sources were retrieved.</div>';
+    } else {
+      data.sources.forEach((s, i) => {
+        const div = document.createElement("div");
+        div.className = "source-item";
+        div.innerHTML = `<div class="meta">#${i + 1} -- ${s.source} (similarity: ${s.score})</div><div>${s.text}</div>`;
+        sourcesList.appendChild(div);
+      });
+    }
+
+    resultsCard.style.display = "block";
+    resultsCard.scrollIntoView({ behavior: "smooth" });
+  } catch (e) {
+    alert("Diagnosis failed: " + e.message);
+  } finally {
+    diagSpinner.style.display = "none";
+    diagnoseBtn.disabled = false;
+  }
+});
+
+// --- Copy buttons ---
+document.querySelectorAll(".copy-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const target = document.getElementById(btn.dataset.target);
+    navigator.clipboard.writeText(target.textContent);
+    btn.textContent = "Copied!";
+    setTimeout(() => (btn.textContent = "Copy"), 1200);
+  });
+});
+</script>
+</body>
+</html>

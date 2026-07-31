@@ -1,0 +1,26 @@
+Fall Armyworm and General Pest Damage in Maize
+
+Fall armyworm (Spodoptera frugiperda) is a major insect pest of maize and other cereal crops,
+capable of causing severe damage if not detected and managed early. Unlike fungal or
+bacterial diseases, pest damage shows up as physical feeding injury rather than
+discoloration or lesions caused by pathogens. Early instar larvae feed on leaves causing
+characteristic "window-paning" -- thin, translucent patches where only one leaf layer
+remains. As larvae grow, feeding damage becomes more severe, with ragged, elongated holes
+in leaves and visible sawdust-like frass (excrement) accumulating in the whorl of the
+plant. In advanced infestations, larvae bore into the developing ear, damaging kernels
+directly.
+
+Conditions favoring outbreak: warm temperatures, continuous cropping of maize without
+rotation, and lack of natural predator populations due to broad-spectrum insecticide use.
+
+Recommended management:
+1. Scout fields regularly, especially the whorl stage, for early signs of window-paning
+   and frass.
+2. Use biological control agents (e.g., Bacillus thuringiensis-based products) or targeted
+   insecticides at early larval stages, since larger larvae are harder to control once
+   inside the whorl or ear.
+3. Practice crop rotation and intercropping to disrupt pest life cycles.
+4. Encourage natural predators (birds, parasitic wasps) by reducing unnecessary broad-
+   spectrum pesticide use.
+5. Remove and destroy heavily infested plants to reduce local pest population buildup.
+6. Consider pheromone traps for early detection and monitoring of adult moth activity.
